@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { MessageCircle, Send, Video, PhoneCall, ArrowLeft, User } from 'lucide-react';
+import Navigation from '@/components/layout/Navigation';
 import { formatDateTime } from '@/lib/heatCycleUtils';
 import { MESSAGE_TYPES } from '@/lib/constants';
 
@@ -207,11 +208,13 @@ export default function Messages() {
   const selectedConvData = conversations.find((c) => c.id === selectedConversation);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <div className={`${selectedConversation ? 'hidden md:block' : 'block'} w-full md:w-80 bg-white border-r`}>
-        <div className="p-4 border-b">
-          <h2 className="text-xl font-bold text-gray-900">Messages</h2>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      <Navigation userRole={user?.user_metadata?.role} />
+      <div className="flex h-[calc(100vh-57px)]">
+        <div className={`${selectedConversation ? 'hidden md:block' : 'block'} w-full md:w-80 bg-white border-r`}>
+          <div className="p-4 border-b">
+            <h2 className="text-xl font-bold text-gray-900">Messages</h2>
+          </div>
         <div className="overflow-y-auto h-[calc(100vh-64px)]">
           {loading ? (
             <div className="p-4 text-center text-gray-500">Loading...</div>
@@ -369,6 +372,7 @@ export default function Messages() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

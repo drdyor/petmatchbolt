@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Search, Bell, Heart, Plus, Filter, MapPin } from 'lucide-react';
-import NotificationCenter from '@/components/notifications/NotificationCenter';
+import Navigation from '@/components/layout/Navigation';
 import { MALTA_LOCATIONS, SPECIES } from '@/lib/constants';
 import { formatDate } from '@/lib/heatCycleUtils';
 
@@ -165,20 +165,18 @@ export default function BuyerDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
+      <div className="min-h-screen bg-gray-50">
+        <Navigation userRole="buyer" />
+        <div className="flex items-center justify-center h-[calc(100vh-57px)]">
+          <div className="text-gray-500">Loading...</div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Discover Pets</h1>
-          <NotificationCenter />
-        </div>
-      </header>
+      <Navigation userRole="buyer" />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         {waitlists.length > 0 && (

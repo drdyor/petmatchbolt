@@ -8,6 +8,7 @@ import Home from '@/pages/Home';
 import BreederDashboard from '@/pages/BreederDashboard';
 import BuyerDashboard from '@/pages/BuyerDashboard';
 import Messages from '@/pages/Messages';
+import Profile from '@/pages/Profile';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -80,6 +81,22 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Messages />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         }
       />

@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { PawPrint, Plus, Calendar, Bell, MessageCircle, Heart, AlertCircle } from 'lucide-react';
 import HeatRing from '@/components/heat/HeatRing';
-import NotificationCenter from '@/components/notifications/NotificationCenter';
+import Navigation from '@/components/layout/Navigation';
 import { calculateHeatCycleData, getDaysUntil, formatDate } from '@/lib/heatCycleUtils';
 
 interface Pet {
@@ -158,20 +158,20 @@ export default function BreederDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-500">Loading dashboard...</div>
+      <div className="min-h-screen bg-gray-50">
+        <Navigation userRole="breeder_independent" />
+        <div className="flex items-center justify-center h-[calc(100vh-57px)]">
+          <div className="text-gray-500">Loading dashboard...</div>
+        </div>
       </div>
     );
   }
 
+  const userRole = user?.user_metadata?.role || 'breeder_independent';
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Breeder Dashboard</h1>
-          <NotificationCenter />
-        </div>
-      </header>
+      <Navigation userRole={userRole} />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
