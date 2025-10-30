@@ -1,82 +1,112 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { ArrowRight, ArrowLeft, Check } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Upload, X } from 'lucide-react';
 import { MALTA_LOCATIONS, COUNTRIES } from '@/lib/constants';
 
-interface OnboardingData {
-  name: string;
-  location: string;
-  country: string;
-  whatsapp_number: string;
-  avatar_url: string;
-}
-
 export default function Onboarding() {
-  const navigate = useNavigate();
-  const location = useLocation();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [userRole, setUserRole] = useState<string>('');
+  const totalSteps = 3;
 
-  const [formData, setFormData] = useState<OnboardingData>({
-    name: '',
+  const [formData, setFormData] = useState({
+    first_name: '',
+    username: '',
     location: '',
     country: 'Malta',
-    whatsapp_number: '',
     avatar_url: '',
   });
 
   useEffect(() => {
-    if (location.state?.role) {
-      setUserRole(location.state.role);
+    loadUserRole();
+  }, [user]);
+
+  const loadUserRole = async () => {
+    try {
+      const { data } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user?.id)
+        .maybeSingle();
+
+      if (data?.role) {
+        setUserRole(data.role);
+      }
+    } catch (error) {
+      console.error('Error loading role:', error);
     }
-  }, [location.state]);
+  };
 
   const isBreeder = userRole === 'breeder_registered' || userRole === 'breeder_independent';
-  const totalSteps = isBreeder ? 4 : 3;
 
   const handleNext = () => {
-    if (currentStep === 1 && !formData.name.trim()) {
-      alert('Please enter your name');
+    if (currentStep === 1 && !formData.first_name) {
+      alert('Please enter your first name');
       return;
     }
     if (currentStep === 2 && !formData.location) {
       alert('Please select your location');
       return;
     }
-    if (currentStep === 3 && isBreeder && !formData.whatsapp_number.trim()) {
-      alert('Please enter your WhatsApp number for video calls');
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      handleComplete();
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image must be less than 5MB');
       return;
     }
 
-    setCurrentStep((prev) => prev + 1);
-  };
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user?.id}-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
 
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep((prev) => prev - 1);
+      const { error: uploadError } = await supabase.storage
+        .from('public')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('public').getPublicUrl(filePath);
+      setFormData({ ...formData, avatar_url: data.publicUrl });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleComplete = async () => {
     setSaving(true);
     try {
-      const isInternational = formData.country !== 'Malta';
+      const updateData: any = {
+        first_name: formData.first_name,
+        username: formData.username || null,
+        location: formData.location,
+        country: formData.country,
+        avatar_url: formData.avatar_url || null,
+        is_international: formData.country !== 'Malta',
+        onboarding_completed: true,
+      };
 
       const { error } = await supabase
         .from('users')
-        .update({
-          name: formData.name,
-          location: formData.location,
-          country: formData.country,
-          whatsapp_number: formData.whatsapp_number,
-          avatar_url: formData.avatar_url,
-          is_international: isInternational,
-          onboarding_completed: true,
-        })
+        .update(updateData)
         .eq('id', user?.id);
 
       if (error) throw error;
@@ -102,7 +132,7 @@ export default function Onboarding() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full">
+      <div className="max-w-lg w-full">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
@@ -127,17 +157,17 @@ export default function Onboarding() {
           {currentStep === 1 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">What's your name?</h2>
-                <p className="text-gray-600 mb-6">Help others know who you are</p>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">What should we call you?</h2>
+                <p className="text-gray-600 mb-6">Just your first name is fine!</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
                 <input
                   type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Enter your full name"
+                  value={formData.first_name}
+                  onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                  placeholder="e.g., Maria"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-lg"
                   autoFocus
                 />
@@ -145,16 +175,16 @@ export default function Onboarding() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Profile Photo (Optional)
+                  Username (Optional)
                 </label>
                 <input
-                  type="url"
-                  value={formData.avatar_url}
-                  onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
-                  placeholder="https://example.com/photo.jpg"
+                  type="text"
+                  value={formData.username}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') })}
+                  placeholder="e.g., maria_breeder"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
-                <p className="text-sm text-gray-500 mt-1">You can add this later</p>
+                <p className="text-sm text-gray-500 mt-1">Optional. Others can find you by username.</p>
               </div>
             </div>
           )}
@@ -208,125 +238,77 @@ export default function Onboarding() {
                   />
                 )}
               </div>
-
-              {formData.country !== 'Malta' && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm text-blue-700">
-                    <strong>International Breeder:</strong> You'll be marked as an international breeder,
-                    making it easy for buyers to find you across borders.
-                  </p>
-                </div>
-              )}
             </div>
           )}
 
-          {currentStep === 3 && isBreeder && (
+          {currentStep === 3 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Enable video calls</h2>
-                <p className="text-gray-600 mb-6">
-                  Connect with buyers through WhatsApp video calls
-                </p>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Add a profile photo</h2>
+                <p className="text-gray-600 mb-6">Help others recognize you (optional)</p>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  WhatsApp Number
-                </label>
-                <input
-                  type="tel"
-                  value={formData.whatsapp_number}
-                  onChange={(e) => setFormData({ ...formData, whatsapp_number: e.target.value })}
-                  placeholder="+356XXXXXXXX"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-lg"
-                />
-                <p className="text-sm text-gray-500 mt-2">
-                  Include country code (e.g., +356 for Malta, +39 for Italy)
-                </p>
-              </div>
-
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <h3 className="font-semibold text-green-800 mb-2">Why WhatsApp?</h3>
-                <ul className="text-sm text-green-700 space-y-1">
-                  <li>• Buyers can request video calls directly from messages</li>
-                  <li>• Show pets in real-time to interested buyers</li>
-                  <li>• Build trust with face-to-face conversations</li>
-                  <li>• Your number is only visible to users you're messaging with</li>
-                </ul>
-              </div>
-            </div>
-          )}
-
-          {((currentStep === 3 && !isBreeder) || (currentStep === 4 && isBreeder)) && (
-            <div className="space-y-6">
-              <div className="text-center">
-                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Check className="w-10 h-10 text-green-600" />
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">You're all set!</h2>
-                <p className="text-gray-600 mb-6">
-                  Your profile is ready. Let's start your PawMatch journey!
-                </p>
-              </div>
-
-              <div className="bg-gray-50 rounded-lg p-6 space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Name:</span>
-                  <span className="font-medium text-gray-900">{formData.name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Location:</span>
-                  <span className="font-medium text-gray-900">
-                    {formData.location}, {formData.country}
-                  </span>
-                </div>
-                {isBreeder && formData.whatsapp_number && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">WhatsApp:</span>
-                    <span className="font-medium text-gray-900">{formData.whatsapp_number}</span>
+              <div className="flex flex-col items-center">
+                {formData.avatar_url ? (
+                  <div className="relative">
+                    <img
+                      src={formData.avatar_url}
+                      alt="Profile"
+                      className="w-32 h-32 rounded-full object-cover border-4 border-orange-100"
+                    />
+                    <button
+                      onClick={() => setFormData({ ...formData, avatar_url: '' })}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-32 h-32 rounded-full bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300">
+                    <Upload className="w-8 h-8 text-gray-400" />
                   </div>
                 )}
+
+                <label className="mt-4 px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors cursor-pointer font-medium">
+                  {uploading ? 'Uploading...' : 'Choose Photo'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    disabled={uploading}
+                  />
+                </label>
+
+                <p className="text-sm text-gray-500 mt-4 text-center">
+                  You can skip this and add a photo later in your profile
+                </p>
               </div>
             </div>
           )}
 
-          <div className="flex gap-4 mt-8">
+          <div className="mt-8 flex gap-3">
             {currentStep > 1 && (
               <button
-                onClick={handleBack}
-                className="flex items-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                onClick={() => setCurrentStep(currentStep - 1)}
+                className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
               >
-                <ArrowLeft className="w-5 h-5" />
                 Back
               </button>
             )}
-
-            {currentStep < totalSteps && (
-              <button
-                onClick={handleNext}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
-              >
-                Continue
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            )}
-
-            {currentStep === totalSteps && (
-              <button
-                onClick={handleComplete}
-                disabled={saving}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
-              >
-                {saving ? 'Saving...' : 'Get Started'}
-                <Check className="w-5 h-5" />
-              </button>
-            )}
+            <button
+              onClick={handleNext}
+              disabled={saving || uploading}
+              className="flex-1 px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+            >
+              {saving ? 'Saving...' : currentStep === totalSteps ? 'Complete' : 'Continue'}
+            </button>
           </div>
-        </div>
 
-        <p className="text-center text-sm text-gray-600 mt-6">
-          You can always update these details later in your profile
-        </p>
+          <p className="text-center text-sm text-gray-500 mt-6">
+            You can always update these details later in your profile
+          </p>
+        </div>
       </div>
     </div>
   );
