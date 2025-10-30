@@ -30,20 +30,39 @@ export default function BuyerDashboard() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [breeds, setBreeds] = useState<any[]>([]);
   const [filters, setFilters] = useState({
+    species: 'all',
     breed: 'all',
     size: 'all',
+    temperament: 'all',
     energyLevel: 'all',
     maxPrice: 10000,
   });
 
   useEffect(() => {
     loadPets();
+    loadBreeds();
   }, []);
 
   useEffect(() => {
     applyFilters();
   }, [pets, searchQuery, filters]);
+
+  const loadBreeds = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('breeds')
+        .select('*')
+        .order('species')
+        .order('full_name');
+
+      if (error) throw error;
+      setBreeds(data || []);
+    } catch (error) {
+      console.error('Error loading breeds:', error);
+    }
+  };
 
   const loadPets = async () => {
     try {
@@ -106,6 +125,10 @@ export default function BuyerDashboard() {
       );
     }
 
+    if (filters.species !== 'all') {
+      filtered = filtered.filter(pet => pet.species === filters.species);
+    }
+
     if (filters.breed !== 'all') {
       filtered = filtered.filter(pet => pet.breed === filters.breed);
     }
@@ -123,8 +146,9 @@ export default function BuyerDashboard() {
     setFilteredPets(filtered);
   };
 
-  const uniqueBreeds = [...new Set(pets.map(p => p.breed))];
-
+  const availableBreeds = breeds.filter(b =>
+    filters.species === 'all' || b.species === filters.species
+  );
   return (
     <div className="min-h-screen bg-white">
       <Navigation userRole="buyer" />
@@ -175,20 +199,40 @@ export default function BuyerDashboard() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Species <span className="text-orange-500">*</span>
+                </label>
+                <select
+                  value={filters.species}
+                  onChange={(e) => setFilters({ ...filters, species: e.target.value, breed: 'all' })}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium"
+                >
+                  <option value="all">🐾 All Pets</option>
+                  <option value="dog">🐕 Dogs</option>
+                  <option value="cat">🐈 Cats</option>
+                </select>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Breed</label>
                 <select
                   value={filters.breed}
                   onChange={(e) => setFilters({ ...filters, breed: e.target.value })}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  disabled={filters.species === 'all'}
                 >
                   <option value="all">All Breeds</option>
-                  {uniqueBreeds.map(breed => (
-                    <option key={breed} value={breed}>{breed}</option>
+                  {availableBreeds.map(breed => (
+                    <option key={breed.id} value={breed.full_name}>{breed.full_name}</option>
                   ))}
                 </select>
+                {filters.species === 'all' && (
+                  <p className="text-xs text-gray-500 mt-1">Select species first</p>
+                )}
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Size</label>
                 <select
@@ -197,11 +241,16 @@ export default function BuyerDashboard() {
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
                 >
                   <option value="all">All Sizes</option>
+                  <option value="teacup">Teacup</option>
+                  <option value="toy">Toy</option>
+                  <option value="miniature">Miniature</option>
                   <option value="small">Small</option>
                   <option value="medium">Medium</option>
                   <option value="large">Large</option>
+                  <option value="giant">Giant</option>
                 </select>
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Energy Level</label>
                 <select
@@ -210,11 +259,12 @@ export default function BuyerDashboard() {
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
                 >
                   <option value="all">All Levels</option>
-                  <option value="relaxed">Relaxed</option>
-                  <option value="mid">Mid-Energy</option>
+                  <option value="low">Low Energy</option>
+                  <option value="medium">Medium Energy</option>
                   <option value="high">High Energy</option>
                 </select>
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Max Price: €{filters.maxPrice}
