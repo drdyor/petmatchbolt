@@ -59,13 +59,7 @@ export default function RoleSelection() {
 
       if (error) throw error;
 
-      if (roleId === 'breeder_registered' || roleId === 'breeder_independent') {
-        navigate('/breeder', { replace: true });
-      } else if (roleId === 'buyer') {
-        navigate('/buyer', { replace: true });
-      } else {
-        navigate('/home', { replace: true });
-      }
+      navigate('/onboarding', { state: { role: roleId }, replace: true });
     } catch (error) {
       console.error('Error updating role:', error);
       alert('Failed to save role. Please try again.');

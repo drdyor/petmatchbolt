@@ -9,6 +9,7 @@ import BreederDashboard from '@/pages/BreederDashboard';
 import BuyerDashboard from '@/pages/BuyerDashboard';
 import Messages from '@/pages/Messages';
 import Profile from '@/pages/Profile';
+import Onboarding from '@/pages/Onboarding';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -49,6 +50,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <RoleSelection />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/onboarding"
+        element={
+          <ProtectedRoute>
+            <Onboarding />
           </ProtectedRoute>
         }
       />

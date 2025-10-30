@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { MessageCircle, Send, Video, PhoneCall, ArrowLeft, User } from 'lucide-react';
+import { MessageCircle, Send, Video, PhoneCall, ArrowLeft, User, UserPlus } from 'lucide-react';
 import Navigation from '@/components/layout/Navigation';
+import WhatsAppInvite from '@/components/messaging/WhatsAppInvite';
 import { formatDateTime } from '@/lib/heatCycleUtils';
 import { MESSAGE_TYPES } from '@/lib/constants';
 
@@ -39,6 +40,7 @@ export default function Messages() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [showWhatsAppInvite, setShowWhatsAppInvite] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -213,7 +215,16 @@ export default function Messages() {
       <div className="flex h-[calc(100vh-57px)]">
         <div className={`${selectedConversation ? 'hidden md:block' : 'block'} w-full md:w-80 bg-white border-r`}>
           <div className="p-4 border-b">
-            <h2 className="text-xl font-bold text-gray-900">Messages</h2>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xl font-bold text-gray-900">Messages</h2>
+              <button
+                onClick={() => setShowWhatsAppInvite(true)}
+                className="p-2 text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
+                title="Find contact by WhatsApp"
+              >
+                <UserPlus className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         <div className="overflow-y-auto h-[calc(100vh-64px)]">
           {loading ? (
@@ -374,6 +385,16 @@ export default function Messages() {
         )}
       </div>
       </div>
+
+      {showWhatsAppInvite && (
+        <WhatsAppInvite
+          onClose={() => setShowWhatsAppInvite(false)}
+          onSuccess={() => {
+            loadConversations();
+            setShowWhatsAppInvite(false);
+          }}
+        />
+      )}
     </div>
   );
 }
