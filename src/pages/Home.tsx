@@ -1,15 +1,58 @@
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/lib/supabase';
 import { Heart, MessageCircle, PawPrint, LogOut, Plus } from 'lucide-react';
 
 export default function Home() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      loadUserRole();
+    }
+  }, [user]);
+
+  const loadUserRole = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user?.id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data?.role) {
+        if (data.role === 'breeder_registered' || data.role === 'breeder_independent') {
+          navigate('/breeder', { replace: true });
+        } else if (data.role === 'buyer') {
+          navigate('/buyer', { replace: true });
+        }
+      } else {
+        navigate('/role-selection', { replace: true });
+      }
+    } catch (error) {
+      console.error('Error loading user role:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

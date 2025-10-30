@@ -5,6 +5,9 @@ import SignIn from '@/pages/SignIn';
 import SignUp from '@/pages/SignUp';
 import RoleSelection from '@/pages/RoleSelection';
 import Home from '@/pages/Home';
+import BreederDashboard from '@/pages/BreederDashboard';
+import BuyerDashboard from '@/pages/BuyerDashboard';
+import Messages from '@/pages/Messages';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -53,6 +56,30 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Home />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/breeder"
+        element={
+          <ProtectedRoute>
+            <BreederDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/buyer"
+        element={
+          <ProtectedRoute>
+            <BuyerDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/messages"
+        element={
+          <ProtectedRoute>
+            <Messages />
           </ProtectedRoute>
         }
       />
