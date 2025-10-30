@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Search, Bell, Heart, Plus, Filter, MapPin } from 'lucide-react';
+import NotificationCenter from '@/components/notifications/NotificationCenter';
 import { MALTA_LOCATIONS, SPECIES } from '@/lib/constants';
 import { formatDate } from '@/lib/heatCycleUtils';
 
@@ -173,8 +174,9 @@ export default function BuyerDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">Discover Pets</h1>
+          <NotificationCenter />
         </div>
       </header>
 

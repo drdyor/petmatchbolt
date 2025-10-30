@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { PawPrint, Plus, Calendar, Bell, MessageCircle, Heart, AlertCircle } from 'lucide-react';
 import HeatRing from '@/components/heat/HeatRing';
+import NotificationCenter from '@/components/notifications/NotificationCenter';
 import { calculateHeatCycleData, getDaysUntil, formatDate } from '@/lib/heatCycleUtils';
 
 interface Pet {
@@ -166,8 +167,9 @@ export default function BreederDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">Breeder Dashboard</h1>
+          <NotificationCenter />
         </div>
       </header>
 
