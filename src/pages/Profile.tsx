@@ -16,6 +16,9 @@ interface UserProfile {
   whatsapp_number: string;
   avatar_url: string;
   is_international: boolean;
+  show_location?: boolean;
+  show_whatsapp?: boolean;
+  show_email?: boolean;
 }
 
 export default function Profile() {
@@ -33,6 +36,9 @@ export default function Profile() {
     country: 'Malta',
     whatsapp_number: '',
     avatar_url: '',
+    show_location: true,
+    show_whatsapp: false,
+    show_email: false,
   });
 
   useEffect(() => {
@@ -59,12 +65,31 @@ export default function Profile() {
           country: data.country || 'Malta',
           whatsapp_number: data.whatsapp_number || '',
           avatar_url: data.avatar_url || '',
+          show_location: data.show_location !== undefined ? data.show_location : true,
+          show_whatsapp: data.show_whatsapp !== undefined ? data.show_whatsapp : false,
+          show_email: data.show_email !== undefined ? data.show_email : false,
         });
       }
     } catch (error) {
       console.error('Error loading profile:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePrivacyUpdate = async (field: string, value: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ [field]: value })
+        .eq('id', user?.id);
+
+      if (error) throw error;
+
+      await loadProfile();
+    } catch (error) {
+      console.error('Error updating privacy setting:', error);
+      alert('Failed to update privacy setting. Please try again.');
     }
   };
 
@@ -221,6 +246,9 @@ export default function Profile() {
                             country: profile.country || 'Malta',
                             whatsapp_number: profile.whatsapp_number || '',
                             avatar_url: profile.avatar_url || '',
+                            show_location: profile.show_location !== undefined ? profile.show_location : true,
+                            show_whatsapp: profile.show_whatsapp !== undefined ? profile.show_whatsapp : false,
+                            show_email: profile.show_email !== undefined ? profile.show_email : false,
                           });
                         }}
                         className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
@@ -372,14 +400,89 @@ export default function Profile() {
                 </>
               )}
 
-              <div className="border-t pt-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Settings</h3>
-                <button
-                  onClick={() => setShowRoleModal(true)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Switch Role
-                </button>
+              <div className="border-t pt-6 space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Privacy Settings</h3>
+                  <div className="space-y-4 bg-gray-50 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-gray-900">Show Location</p>
+                        <p className="text-sm text-gray-500">Let others see your city/region</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.show_location !== undefined ? formData.show_location : (profile.show_location ?? true)}
+                          onChange={(e) => {
+                            const newValue = e.target.checked;
+                            setFormData({ ...formData, show_location: newValue });
+                            if (!editing) {
+                              handlePrivacyUpdate('show_location', newValue);
+                            }
+                          }}
+                          className="sr-only peer"
+                        />
+                        <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                      </label>
+                    </div>
+
+                    {isBreeder && (
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-gray-900">Show WhatsApp</p>
+                          <p className="text-sm text-gray-500">Share your WhatsApp with connections</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.show_whatsapp !== undefined ? formData.show_whatsapp : (profile.show_whatsapp ?? false)}
+                            onChange={(e) => {
+                              const newValue = e.target.checked;
+                              setFormData({ ...formData, show_whatsapp: newValue });
+                              if (!editing) {
+                                handlePrivacyUpdate('show_whatsapp', newValue);
+                              }
+                            }}
+                            className="sr-only peer"
+                          />
+                          <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                        </label>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-gray-900">Show Email</p>
+                        <p className="text-sm text-gray-500">Make your email visible to others</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.show_email !== undefined ? formData.show_email : (profile.show_email ?? false)}
+                          onChange={(e) => {
+                            const newValue = e.target.checked;
+                            setFormData({ ...formData, show_email: newValue });
+                            if (!editing) {
+                              handlePrivacyUpdate('show_email', newValue);
+                            }
+                          }}
+                          className="sr-only peer"
+                        />
+                        <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Settings</h3>
+                  <button
+                    onClick={() => setShowRoleModal(true)}
+                    className="px-5 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  >
+                    Switch Role
+                  </button>
+                </div>
               </div>
             </div>
           </div>

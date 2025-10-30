@@ -90,25 +90,25 @@ export default function Navigation({ userRole }: NavigationProps) {
   return (
     <>
       <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 py-3">
+        <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
+                className="lg:hidden p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                {mobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
               </button>
 
-              <button onClick={() => navigate(isBreeder ? '/breeder' : isBuyer ? '/buyer' : '/home')} className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
-                  <PawPrint className="w-5 h-5 text-white" />
+              <button onClick={() => navigate(isBreeder ? '/breeder' : isBuyer ? '/buyer' : '/home')} className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                  <PawPrint className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-xl font-bold text-gray-900 hidden sm:block">PawMatch</span>
+                <span className="text-2xl font-bold text-gray-900 hidden sm:block">PawMatch</span>
               </button>
             </div>
 
-            <nav className="hidden lg:flex items-center gap-1">
+            <nav className="hidden lg:flex items-center gap-2">
               {filteredNavItems.slice(0, -2).map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
@@ -116,10 +116,10 @@ export default function Navigation({ userRole }: NavigationProps) {
                   <button
                     key={item.path}
                     onClick={() => navigate(item.path)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                    className={`flex items-center gap-2 px-5 py-3 rounded-lg transition-colors text-base ${
                       isActive
-                        ? 'bg-orange-100 text-orange-600 font-medium'
-                        : 'text-gray-600 hover:bg-gray-100'
+                        ? 'bg-orange-100 text-orange-600 font-semibold'
+                        : 'text-gray-700 hover:bg-gray-100 font-medium'
                     }`}
                   >
                     <Icon className="w-5 h-5" />
@@ -129,19 +129,19 @@ export default function Navigation({ userRole }: NavigationProps) {
               })}
             </nav>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <NotificationCenter />
 
               <button
                 onClick={() => navigate('/profile')}
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <User className="w-6 h-6" />
+                <User className="w-7 h-7" />
               </button>
 
               <button
                 onClick={handleSignOut}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                className="hidden sm:flex items-center gap-2 px-5 py-3 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors font-medium"
               >
                 <LogOut className="w-5 h-5" />
                 <span className="hidden md:inline">Sign Out</span>
