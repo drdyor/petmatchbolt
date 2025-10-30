@@ -7,6 +7,8 @@ import RoleSelection from '@/pages/RoleSelection';
 import Home from '@/pages/Home';
 import BreederDashboard from '@/pages/BreederDashboard';
 import BuyerDashboard from '@/pages/BuyerDashboard';
+import ShelterDashboard from '@/pages/ShelterDashboard';
+import VetDashboard from '@/pages/VetDashboard';
 import Messages from '@/pages/Messages';
 import Profile from '@/pages/Profile';
 import Onboarding from '@/pages/Onboarding';
@@ -82,6 +84,22 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <BuyerDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/shelter"
+        element={
+          <ProtectedRoute>
+            <ShelterDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/vet"
+        element={
+          <ProtectedRoute>
+            <VetDashboard />
           </ProtectedRoute>
         }
       />

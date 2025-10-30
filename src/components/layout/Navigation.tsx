@@ -33,12 +33,22 @@ export default function Navigation({ userRole }: NavigationProps) {
 
   const isBreeder = userRole === 'breeder_registered' || userRole === 'breeder_independent';
   const isBuyer = userRole === 'buyer';
+  const isShelter = userRole === 'shelter';
+  const isVet = userRole === 'vet';
+
+  const getDashboardPath = () => {
+    if (isBreeder) return '/breeder';
+    if (isBuyer) return '/buyer';
+    if (isShelter) return '/shelter';
+    if (isVet) return '/vet';
+    return '/home';
+  };
 
   const navItems = [
     {
       name: 'Dashboard',
       icon: Home,
-      path: isBreeder ? '/breeder' : isBuyer ? '/buyer' : '/home',
+      path: getDashboardPath(),
       show: true,
     },
     {
@@ -100,7 +110,7 @@ export default function Navigation({ userRole }: NavigationProps) {
                 {mobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
               </button>
 
-              <button onClick={() => navigate(isBreeder ? '/breeder' : isBuyer ? '/buyer' : '/home')} className="flex items-center gap-3">
+              <button onClick={() => navigate(getDashboardPath())} className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
                   <PawPrint className="w-6 h-6 text-white" />
                 </div>

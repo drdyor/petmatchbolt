@@ -85,6 +85,10 @@ export default function Onboarding() {
         navigate('/breeder', { replace: true });
       } else if (userRole === 'buyer') {
         navigate('/buyer', { replace: true });
+      } else if (userRole === 'shelter') {
+        navigate('/shelter', { replace: true });
+      } else if (userRole === 'vet') {
+        navigate('/vet', { replace: true });
       } else {
         navigate('/home', { replace: true });
       }
