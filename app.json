@@ -49,7 +49,9 @@
     "extra": {
       "router": {
         "origin": false
-      }
+      },
+      "supabaseUrl": "https://hbtgccadqjqeuknlmkqv.supabase.co",
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhidGdjY2FkcWpxZXVrbmxta3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3ODIyNjQsImV4cCI6MjA3NzM1ODI2NH0._jZ4ZQOq3xcpNPkqgJFRz6EX5jt6-uRjzYkgcEWEYts"
     }
   }
 }
